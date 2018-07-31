@@ -1,5 +1,4 @@
 
-import com.meitu.mlink.sqlengine.api.sql.SqlConvert;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
@@ -10,7 +9,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static com.meitu.mlink.sqlengine.api.sql.SqlConstant.*;
 
 /**
  * @author wpl
