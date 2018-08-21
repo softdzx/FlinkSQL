@@ -9,8 +9,8 @@
 
     <modules>
         <module>blink-client</module>
-        <module>blink-common</module>
         <module>blink-sqlserver</module>
+        <module>blink-job</module>
     </modules>
 
     <properties>
@@ -274,6 +274,11 @@
                         <artifactId>xz</artifactId>
                     </exclusion>
                 </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.flink</groupId>
+                <artifactId>flink-json</artifactId>
+                <version>${flink.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.apache.flink</groupId>

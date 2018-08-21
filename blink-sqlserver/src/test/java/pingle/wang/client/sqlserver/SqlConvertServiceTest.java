@@ -1,9 +1,8 @@
-package pingle.wang.api.sqlserver.impl;
+package pingle.wang.client.sqlserver;
 
 import com.google.common.base.Joiner;
 import org.junit.Before;
 import org.junit.Test;
-import pingle.wang.api.sqlserver.SqlConvertService;
 
 import java.util.List;
 import java.util.Map;

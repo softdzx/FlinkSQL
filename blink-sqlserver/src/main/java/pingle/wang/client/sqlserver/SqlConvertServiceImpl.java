@@ -1,4 +1,4 @@
-package pingle.wang.api.sqlserver.impl;
+package pingle.wang.client.sqlserver;
 
 import com.google.common.base.Joiner;
 import net.sf.jsqlparser.JSQLParserException;
@@ -18,14 +18,13 @@ import org.apache.flink.api.common.typeinfo.SqlTimeTypeInfo;
 import org.apache.flink.api.common.typeinfo.TypeInformation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import pingle.wang.api.common.sql.SqlInputException;
-import pingle.wang.api.common.sql.SqlParserResDescriptor;
-import pingle.wang.api.sqlserver.SqlConvertService;
+import pingle.wang.client.common.sql.SqlInputException;
+import pingle.wang.client.common.sql.SqlParserResDescriptor;
 
 import java.io.StringReader;
 import java.util.*;
 
-import static pingle.wang.api.common.sql.SqlConstant.*;
+import static pingle.wang.client.common.sql.SqlConstant.*;
 
 
 /**

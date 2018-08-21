@@ -1,8 +1,7 @@
-package pingle.wang.api.sqlserver;
+package pingle.wang.client.sqlserver;
 
-import pingle.wang.api.common.sql.SqlParserResDescriptor;
+import pingle.wang.client.common.sql.SqlParserResDescriptor;
 
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 

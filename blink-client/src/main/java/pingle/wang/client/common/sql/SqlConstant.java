@@ -1,4 +1,4 @@
-package pingle.wang.api.common.sql;
+package pingle.wang.client.common.sql;
 
 /**
  * @Author: wpl

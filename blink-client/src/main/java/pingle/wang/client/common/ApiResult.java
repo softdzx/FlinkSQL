@@ -1,4 +1,4 @@
-package pingle.wang.api.common;
+package pingle.wang.client.common;
 
 /**
  * @Author: wpl
