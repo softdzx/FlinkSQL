@@ -33,8 +33,68 @@
    
 三.代码关注
 
-apache Flink sql实现
+apache Flink sql
 
-apache calcite 的sql引擎源码解读
+apache calcite
 
-apache hive
+apache hive  
+
+
+四.样例
+```sql
+CREATE FUNCTION demouf AS 
+      'pingle.wang.api.sql.function.DemoUDF' 
+USING JAR 'hdfs://flink/udf/jedis.jar',
+      JAR 'hdfs://flink/udf/customudf.jar';
+      
+      
+CREATE TABLE kafak_source (
+      `date` string,
+      amount float, 
+      proctime timestamp
+      ) 
+with (
+      type=kafka,
+      'flink.parallelism'=1,
+      'kafka.topic'='topic',
+      'kafka.group.id'='flinks',
+      'kafka.enable.auto.commit'=true,
+      'kafka.bootstrap.servers'='localhost:9092'
+);
+
+
+CREATE TABLE mysql_sink (
+      `date` string, 
+      amount float, 
+      PRIMARY KEY (`date`,amount)
+      ) 
+with (
+      type=mysql,
+      'mysql.connection'='localhost:3306',
+      'mysql.db.name'=flink,
+      'mysql.batch.size'=0,
+      'mysql.table.name'=flink_table,
+      'mysql.user'=root,
+      'mysql.pass'=root
+);
+
+
+CREATE VIEW view_select AS 
+      SELECT `date`, 
+              amount 
+      FROM kafak_source 
+      GROUP BY 
+            `date`,
+            amount
+      ;
+
+
+INSERT INTO mysql_sink 
+       SELECT 
+          `date`, 
+          sum(amount) 
+       FROM view_select 
+       GROUP BY 
+          `date`
+      ;
+```
