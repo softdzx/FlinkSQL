@@ -13,10 +13,7 @@ import pingle.wang.client.table.FlinkTableSink;
 import pingle.wang.sqlserver.sql.parser.impl.SqlParserImpl;
 
 import java.io.StringReader;
-import java.util.Collection;
-import java.util.LinkedHashMap;
-import java.util.LinkedList;
-import java.util.Map;
+import java.util.*;
 
 /**
  * @Author: wpl
@@ -26,13 +23,32 @@ public class Planner {
 
     private Map<String, FlinkTableCatalog> inputs;
     private Map<String, TableSource> tableSourceMap;
-    private LinkedList<FlinkTableSink> mlinkTableSinks;
-    private   Map<String, String>  extraProps;
+    private List<FlinkTableSink> flinkTableSinks;
+    private Map<String, String>  extraProps;
 
-    //含有视图解析的sql部分
-    public CompilationResult sqlPlanner(Map<String,LinkedHashMap<String,String>> sqls, int parallelism) throws Throwable {
+    public Planner() {
+    }
+
+    public Planner(Map<String, FlinkTableCatalog> inputs, Map<String, TableSource> tableSourceMap, List<FlinkTableSink> flinkTableSinks, Map<String, String> extraProps) {
+        this.inputs = inputs;
+        this.tableSourceMap = tableSourceMap;
+        this.flinkTableSinks = flinkTableSinks;
+        this.extraProps = extraProps;
+    }
+
+    public CompilationResult sqlPlanner(Map<String,List<String>> funMap,Map<String,LinkedHashMap<String,String>> sqls, int parallelism) throws Throwable {
         Validator validator = new Validator();
-        //视图验证
+
+        //方法
+        if(funMap.containsKey(SqlConstant.FUNCTION)){
+            List<String> list = funMap.get(SqlConstant.FUNCTION);
+            for (String sql:list) {
+                SqlNodeList stmts = parse(sql);
+                validator.validateFunction(stmts);
+            }
+        }
+
+        //视图
         if(sqls.containsKey(SqlConstant.VIEW)){
             //视图名，对应查询
             LinkedHashMap<String, String> viewMap = sqls.get(SqlConstant.VIEW);
@@ -43,6 +59,7 @@ public class Planner {
             }
         }
 
+        //dml
         if (sqls.containsKey(SqlConstant.INSERT_INTO)) {
             LinkedHashMap<String, String> updateMap = sqls.get(SqlConstant.INSERT_INTO);
             Collection<String> values = updateMap.values();
@@ -55,7 +72,7 @@ public class Planner {
         JobDescriptor job = new JobDescriptor(
                     validator.userDefinedFunctions(),
                     tableSourceMap,
-                    mlinkTableSinks,
+                    flinkTableSinks,
                     parallelism,
                     extraProps,
                     sqls

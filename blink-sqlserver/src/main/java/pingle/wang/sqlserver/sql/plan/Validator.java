@@ -48,6 +48,10 @@ public class Validator {
         validateExactlyOnceDml(query);
     }
 
+    public void validateFunction(SqlNodeList query) {
+        extract(query);
+    }
+
     /**
      * Extract options and jars from the queries.
      */
