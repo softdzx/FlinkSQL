@@ -8,6 +8,7 @@ import java.io.IOException;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -17,7 +18,7 @@ public class JobDescriptor implements Serializable {
     private  static final long serialVersionUID = -1;
     private  Map<String, String> userDefineFunctions;
     private  Map<String, TableSource> flinkTableSources;
-    private  Map<String, FlinkTableSink>  flinkTableSinks;
+    private  List<FlinkTableSink> flinkTableSinks;
     private  int parallelism;
     private  Map<String, String> extraProps;
     private  Map<String,LinkedHashMap<String,String>> sqls;
@@ -25,7 +26,7 @@ public class JobDescriptor implements Serializable {
     public JobDescriptor() {
     }
 
-    public JobDescriptor(Map<String, String> userDefineFunctions, Map<String, TableSource> flinkTableSources, Map<String, FlinkTableSink> flinkTableSinks, int parallelism, Map<String, String> extraProps, Map<String, LinkedHashMap<String, String>> sqls) {
+    public JobDescriptor(Map<String, String> userDefineFunctions, Map<String, TableSource> flinkTableSources, List<FlinkTableSink> flinkTableSinks, int parallelism, Map<String, String> extraProps, Map<String, LinkedHashMap<String, String>> sqls) {
         this.userDefineFunctions = userDefineFunctions;
         this.flinkTableSources = flinkTableSources;
         this.flinkTableSinks = flinkTableSinks;
@@ -50,11 +51,11 @@ public class JobDescriptor implements Serializable {
         this.flinkTableSources = flinkTableSources;
     }
 
-    public Map<String, FlinkTableSink> getFlinkTableSinks() {
+    public List<FlinkTableSink> getFlinkTableSinks() {
         return flinkTableSinks;
     }
 
-    public void setFlinkTableSinks(Map<String, FlinkTableSink> flinkTableSinks) {
+    public void setFlinkTableSinks(List<FlinkTableSink> flinkTableSinks) {
         this.flinkTableSinks = flinkTableSinks;
     }
 

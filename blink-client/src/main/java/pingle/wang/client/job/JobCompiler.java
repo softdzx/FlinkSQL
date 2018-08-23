@@ -137,8 +137,7 @@ public class JobCompiler {
     }
 
     private JobCompiler registerOutputTableSink() {
-        Map<String, FlinkTableSink> flinkTableSinks = job.getFlinkTableSinks();
-        Collection<FlinkTableSink> tableSinks = flinkTableSinks.values();
+        List<FlinkTableSink> tableSinks = job.getFlinkTableSinks();
         if (CollectionUtils.isNotEmpty(tableSinks)){
             for (FlinkTableSink sink:tableSinks) {
                 String typeName = sink.getTypeName();
@@ -165,7 +164,7 @@ public class JobCompiler {
                                 sink.getTableName(),
                                 sink.getSchema().getColumnNames(),
                                 sink.getSchema().getTypes(),
-                                getUpsertOutputTable(sink.getTableSink().getTable(sink.getTableName())));
+                                getBatchTableSink(sink.getTableSink().getTable(sink.getTableName())));
                     }
 
                 } catch (IOException e) {

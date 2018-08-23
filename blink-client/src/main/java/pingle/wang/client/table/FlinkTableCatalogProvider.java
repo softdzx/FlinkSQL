@@ -4,6 +4,7 @@ import org.apache.flink.table.api.TableSchema;
 import org.apache.flink.table.sources.TableSource;
 
 import java.util.HashMap;
+import java.util.Map;
 
 /**
  * @Author: wpl
@@ -11,15 +12,9 @@ import java.util.HashMap;
 public interface FlinkTableCatalogProvider {
     String getType();
 
-    FlinkTableCatalog getInputCatalog(HashMap<String,String> props, TableSchema schema);
+    TableSource getInputTableSource(Map<String,String> props, TableSchema schema);
 
-    /**
-     * @param props
-     * @param schema
-     * @return
-     */
-    TableSource getInputTableSource(HashMap<String,String> props, TableSchema schema);
+    FlinkTableCatalog getInputCatalog(Map<String,String> props, TableSchema schema);
 
-
-    FlinkTableCatalog getOutputCatalog(HashMap<String,String> props,TableSchema schema);
+    FlinkTableCatalog getOutputCatalog(Map<String,String> props, TableSchema schema);
 }
