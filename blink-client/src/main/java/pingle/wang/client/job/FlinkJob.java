@@ -13,5 +13,5 @@ public interface FlinkJob {
      * @param props 配置信息
      * @return
      */
-    CompilationResult getFlinkJob(String sqls,Map<String,String> props) throws Exception;
+    CompilationResult getFlinkJob(String sqls,Map<String,String> props) throws Throwable;
 }

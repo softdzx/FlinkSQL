@@ -24,16 +24,16 @@ public class Planner {
     private Map<String, FlinkTableCatalog> inputs;
     private Map<String, TableSource> tableSourceMap;
     private List<FlinkTableSink> flinkTableSinks;
-    private Map<String, String>  extraProps;
+    private Map<String, String>  jobProps;
 
     public Planner() {
     }
 
-    public Planner(Map<String, FlinkTableCatalog> inputs, Map<String, TableSource> tableSourceMap, List<FlinkTableSink> flinkTableSinks, Map<String, String> extraProps) {
+    public Planner(Map<String, FlinkTableCatalog> inputs, Map<String, TableSource> tableSourceMap, List<FlinkTableSink> flinkTableSinks, Map<String, String> jobProps) {
         this.inputs = inputs;
         this.tableSourceMap = tableSourceMap;
         this.flinkTableSinks = flinkTableSinks;
-        this.extraProps = extraProps;
+        this.jobProps = jobProps;
     }
 
     public CompilationResult sqlPlanner(Map<String,List<String>> funMap,Map<String,LinkedHashMap<String,String>> sqls, int parallelism) throws Throwable {
@@ -74,7 +74,7 @@ public class Planner {
                     tableSourceMap,
                     flinkTableSinks,
                     parallelism,
-                    extraProps,
+                    jobProps,
                     sqls
                 );
 

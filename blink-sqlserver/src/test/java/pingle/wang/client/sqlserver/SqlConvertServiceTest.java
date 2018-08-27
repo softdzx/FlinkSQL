@@ -20,6 +20,7 @@ public class SqlConvertServiceTest {
     @Test
     public void testGetCreateSourceSqlInfo() throws Exception {
         Map<String, String> sourceSqlInfo = sqlConvertService.getCreateSourceSqlInfo(sqlContext);
+        System.out.println(sourceSqlInfo);
         Assert.assertEquals(sourceSqlInfo.size(),1);
     }
 
@@ -94,6 +95,8 @@ public class SqlConvertServiceTest {
                 Joiner.on("").join(
                         udf,source,sink,view, result
                 );
+
+        System.out.println(sqlContext);
 
         sqlConvertService = new SqlConvertServiceImpl();
     }
