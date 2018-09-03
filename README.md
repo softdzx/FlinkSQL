@@ -26,11 +26,13 @@
 
 
    1.SqlConvertService是将用户sql语句解析为不同类型，source,sink,view,dml（目前只支持insert into）
+     SqlParserImpl SQL的解析
+     Validator  验证器
+     Planner    计划解析
    
+   2.FlinkJobImpl是实现Flink的Source和Sink，以及JobGraph
    
-   2.ddl类型的sql语句，实现Flink的Source和Sink；
-   
-   
+   3.JobGraph的提交和执行,如StandaloneClusterClient.submitJob或者YarnClusterClient.runDetached
 三.代码关注
 
 apache Flink sql
@@ -56,8 +58,8 @@ CREATE TABLE kafak_source (
 with (
       type=kafka,
       'flink.parallelism'=1,
-      'kafka.topic'='topic',
-      'kafka.group.id'='flinks',
+      'kafka.topic'=topic,
+      'kafka.group.id'=flinks,
       'kafka.enable.auto.commit'=true,
       'kafka.bootstrap.servers'='localhost:9092'
 );
