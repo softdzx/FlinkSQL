@@ -10,16 +10,16 @@
     用户输入sql（ddl,dml,query） -> ddl对应为Flink的source和source
 
 
-                           -> dml的insert into对应将对应数据加载到 sink 
+                                -> dml的insert into对应将对应数据加载到 sink 
                            
                            
-                           -> query数据处理和计算
+                                -> query数据处理和计算
                            
                            
     --> 封装为api对应Flink的Job:env.sqlQuery/env.sqlUpdate;table.writeToSink;
     
     
-    --> Job提交执行 streamGraph.getJobGraph(); 
+    --> JobGraph和对应job提交; 
     
     
 二.开发过程
