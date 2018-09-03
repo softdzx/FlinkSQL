@@ -23,6 +23,7 @@ import pingle.wang.sqlserver.sql.plan.Planner;
 import java.util.*;
 
 import static pingle.wang.client.common.sql.SqlConstant.INDEXE;
+import static pingle.wang.sqlserver.flink.job.FlinkJobConstant.JOB_FLAG;
 
 /**
  * @Author: wpl
@@ -37,6 +38,8 @@ public class FlinkJobImpl implements FlinkJob {
     private Map<String, List<String>> userSqls;
     private Map<String, String> sqlInfoMap;
     private Map<String,List<String>> funMap;
+
+    private Map<String, String> jobCommonProps = new HashMap<>();
 
     private SqlConvertService sqlConvertService = new SqlConvertServiceImpl();
 
@@ -56,19 +59,30 @@ public class FlinkJobImpl implements FlinkJob {
             .getFunctionSqls()
             .getExecuteSqls();
 
+        if (null != jobProps){
+            jobCommonProps.putAll(jobProps);
+        }
+
 
         CompilationResult result = null;
-        Planner planner = new Planner(null, sources, flinkTableSinks, jobProps);
+        Planner planner = new Planner(sources, flinkTableSinks, jobCommonProps);
 
-        if (jobProps.containsKey(FlinkJobConstant.PARALLELISM)){
+        if (jobCommonProps.containsKey(FlinkJobConstant.PARALLELISM)){
             result = planner.sqlPlanner(funMap,
                     sqls,
-                    Integer.valueOf(jobProps.getOrDefault(FlinkJobConstant.PARALLELISM, "2")));
+                    Integer.valueOf(jobCommonProps.getOrDefault(FlinkJobConstant.PARALLELISM, "2")));
         }else {
             result = planner.sqlPlanner(funMap,
                     sqls,
                     Runtime.getRuntime().availableProcessors());
         }
+
+        //设置flink的任务信息
+        result.setName("Flink Job");
+        result.setMemorysize(1024);
+        result.setNumSlots(2);
+        result.setNumContainers(3);
+        result.setQueue("default");
 
         return result;
     }
@@ -138,8 +152,15 @@ public class FlinkJobImpl implements FlinkJob {
 
             //job的参数信息内容
             Map<String, String> parms = sqlDdlParser.getParms();
-            //TODO: source创建需要的配置信息，如kafka的topic等信息
 
+            Set<String> keySet = parms.keySet();
+            //1.flink开头的配置信息
+            for (String key : keySet) {
+                if (key.startsWith(JOB_FLAG)){
+                    jobCommonProps.put(key,parms.get(key));
+                }
+            }
+            //TODO: 2source创建需要的配置信息，如kafka的topic等信息,目前先不管，直接传递下去
             TableSource tableSource = sourceProvider.getInputTableSource(parms, inputSchema);
 
             String tableName = sqlDdlParser.getTableName();
@@ -172,9 +193,16 @@ public class FlinkJobImpl implements FlinkJob {
                     schemas.values().toArray(new TypeInformation<?>[schemas.size()])
             );
 
-            //TODO: sink创建需要的配置信息，如mysql的服务器，用户名和密码等
             Map<String, String> parms = sqlDdlParser.getParms();
 
+            Set<String> keySet = parms.keySet();
+            //1.flink开头的配置信息
+            for (String key : keySet) {
+                if (key.startsWith(JOB_FLAG)){
+                    jobCommonProps.put(key,parms.get(key));
+                }
+            }
+            //TODO: 2.sink创建需要的配置信息，如mysql的服务器，用户名和密码等，先不处理，传递下去
             FlinkTableCatalog tableSink = sinkProvider.getOutputCatalog(parms, outputSchema);
 
             String tableName = sqlDdlParser.getTableName();
