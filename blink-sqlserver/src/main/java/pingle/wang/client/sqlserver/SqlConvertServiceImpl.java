@@ -33,6 +33,7 @@ import static pingle.wang.client.common.sql.SqlConstant.*;
 public class SqlConvertServiceImpl implements SqlConvertService {
     private static final Logger logger = LoggerFactory.getLogger(SqlConvertServiceImpl.class);
 
+    private final String type ="type";
     private final String flag = "=";
 
     public SqlConvertServiceImpl() {
@@ -141,11 +142,11 @@ public class SqlConvertServiceImpl implements SqlConvertService {
             if (CollectionUtils.isNotEmpty(optionsStrings)){
                 String options = optionsStrings.get(1);
                 if (StringUtils.isNotBlank(options)){
-                    String[] values = options.trim().substring(1, options.length() - 1).split(",");
+                    String[] values = options.substring(1, options.length() - 1).split(",");
                     for (String value : values) {
                         if (value.contains(flag)){
                             String[] keyValue = value.split(flag);
-                            parms.put(keyValue[0],keyValue[1]);
+                            parms.put(keyValue[0].replaceAll("'","").trim(),keyValue[1].replaceAll("'","").trim());
                         }
                     }
                 }
@@ -157,6 +158,9 @@ public class SqlConvertServiceImpl implements SqlConvertService {
 
         sqlParserResDescriptor.setSchemas(schemas);
         sqlParserResDescriptor.setParms(parms);
+        if (parms.containsKey(type)){
+            sqlParserResDescriptor.setSourceType(parms.get(type));
+        }
 
         return sqlParserResDescriptor;
     }
