@@ -7,7 +7,7 @@
    2.目前实现思路：
    
    
-    用户输入sql（ddl,dml,query）  -> ddl对应为Flink的source和source
+    用户输入sql（ddl,dml,query）  -> ddl对应为Flink的source和sink
 
 
                                 -> dml的insert into对应将对应数据加载到 sink 
