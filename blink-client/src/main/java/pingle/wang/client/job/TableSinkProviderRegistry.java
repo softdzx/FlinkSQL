@@ -26,15 +26,11 @@ public final class TableSinkProviderRegistry {
     private TableSinkProviderRegistry() {
     }
 
-    /**
-     *
-     * @param table
-     * @return
-     */
     public static FlinkTableSinkProvider getProvider(ExternalCatalogTable table) {
         DescriptorProperties properties = new DescriptorProperties(true);
         table.addProperties(properties);
         String connectorType = properties.getString(ConnectorDescriptorValidator.CONNECTOR_TYPE());
         return PROVIDERS.get(connectorType);
     }
+
 }
