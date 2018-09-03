@@ -38,9 +38,9 @@ public class Validator {
         return userDefinedFunctions;
     }
 
-    public void validateQuery(SqlNodeList query) {
+    public void validateViewQuery(SqlNodeList query) {
         extract(query);
-        validateExactlyOnceSelect(query);
+        validateExactlyOnceViewSelect(query);
     }
 
     public void validateDml(SqlNodeList query) {
@@ -92,22 +92,15 @@ public class Validator {
     }
 
     @VisibleForTesting
-    void validateExactlyOnceSelect(SqlNodeList query) {
+    void validateExactlyOnceViewSelect(SqlNodeList query) {
         Preconditions.checkArgument(query.size() > 0);
+        SqlNode last = query.get(query.size() - 1);
         long n = StreamSupport.stream(query.spliterator(), false)
-                .filter(x -> x instanceof SqlInsert)
+                .filter(x -> x instanceof SqlSelect)
                 .count();
-        System.out.println(n);
-        Stream<SqlNode> nodeStream = StreamSupport.stream(query.spliterator(), false)
-                .filter(x -> x instanceof SqlSelect);
-        Iterator<SqlNode> iterator = nodeStream.iterator();
-        for (Iterator<SqlNode> it = iterator; it.hasNext(); ) {
-            SqlSelect node = (SqlSelect) it.next();
-            sqlQuery = node;
-        }
-        Preconditions.checkArgument(n == 1 && sqlQuery instanceof SqlSelect,
-                "Only one top-level Insert statement is allowed");
-
+        Preconditions.checkArgument(n == 1 && last instanceof SqlSelect,
+                "Only one top-level SELECT statement is allowed");
+        sqlQuery = (SqlSelect) last;
     }
 
     @VisibleForTesting

@@ -8,7 +8,6 @@ import pingle.wang.client.common.sql.SqlConstant;
 import pingle.wang.client.job.CompilationResult;
 import pingle.wang.client.job.JobCompiler;
 import pingle.wang.client.job.JobDescriptor;
-import pingle.wang.client.table.FlinkTableCatalog;
 import pingle.wang.client.table.FlinkTableSink;
 import pingle.wang.sqlserver.sql.parser.impl.SqlParserImpl;
 
@@ -21,16 +20,11 @@ import java.util.*;
 public class Planner {
     private static final int DEFAULT_IDENTIFIER_MAX_LENGTH = 128;
 
-    private Map<String, FlinkTableCatalog> inputs;
     private Map<String, TableSource> tableSourceMap;
     private List<FlinkTableSink> flinkTableSinks;
     private Map<String, String>  jobProps;
 
-    public Planner() {
-    }
-
-    public Planner(Map<String, FlinkTableCatalog> inputs, Map<String, TableSource> tableSourceMap, List<FlinkTableSink> flinkTableSinks, Map<String, String> jobProps) {
-        this.inputs = inputs;
+    public Planner( Map<String, TableSource> tableSourceMap, List<FlinkTableSink> flinkTableSinks, Map<String, String> jobProps) {
         this.tableSourceMap = tableSourceMap;
         this.flinkTableSinks = flinkTableSinks;
         this.jobProps = jobProps;
@@ -55,7 +49,7 @@ public class Planner {
             Collection<String> views =viewMap.values();
             for (String sql:views) {
                 SqlNodeList stmts = parse(sql);
-                validator.validateQuery(stmts);
+                validator.validateViewQuery(stmts);
             }
         }
 
