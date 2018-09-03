@@ -25,10 +25,13 @@
 二.开发过程
 
 
-   1.SqlConvertService是将用户sql语句解析为不同类型，source,sink,view,dml（目前只支持insert into）
-     SqlParserImpl SQL的解析
-     Validator  验证器
-     Planner    计划解析
+   1.SqlConvertService是将用户sql语句解析为不同类型，source,sink,view,dml（目前只支持insert into）  
+   
+   SqlParserImpl SQL的解析  
+     
+   Validator  验证器  
+   
+   Planner    计划解析
    
    2.FlinkJobImpl是实现Flink的Source和Sink，以及JobGraph
    
