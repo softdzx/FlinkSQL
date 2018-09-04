@@ -158,6 +158,7 @@ public class SqlConvertServiceImpl implements SqlConvertService {
 
         sqlParserResDescriptor.setSchemas(schemas);
         sqlParserResDescriptor.setParms(parms);
+
         if (parms.containsKey(type)){
             sqlParserResDescriptor.setSourceType(parms.get(type));
         }
