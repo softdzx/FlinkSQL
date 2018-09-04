@@ -21,12 +21,12 @@ public class JobDescriptor implements Serializable {
     private  List<FlinkTableSink> flinkTableSinks;
     private  int parallelism;
     private  Map<String, String> extraProps;
-    private  Map<String,LinkedHashMap<String,String>> sqls;
+    private  Map<String,Map<String,String>> sqls;
 
     public JobDescriptor() {
     }
 
-    public JobDescriptor(Map<String, String> userDefineFunctions, Map<String, TableSource> flinkTableSources, List<FlinkTableSink> flinkTableSinks, int parallelism, Map<String, String> extraProps, Map<String, LinkedHashMap<String, String>> sqls) {
+    public JobDescriptor(Map<String, String> userDefineFunctions, Map<String, TableSource> flinkTableSources, List<FlinkTableSink> flinkTableSinks, int parallelism, Map<String, String> extraProps, Map<String, Map<String, String>> sqls) {
         this.userDefineFunctions = userDefineFunctions;
         this.flinkTableSources = flinkTableSources;
         this.flinkTableSinks = flinkTableSinks;
@@ -75,11 +75,11 @@ public class JobDescriptor implements Serializable {
         this.extraProps = extraProps;
     }
 
-    public Map<String, LinkedHashMap<String, String>> getSqls() {
+    public Map<String, Map<String, String>> getSqls() {
         return sqls;
     }
 
-    public void setSqls(Map<String, LinkedHashMap<String, String>> sqls) {
+    public void setSqls(Map<String, Map<String, String>> sqls) {
         this.sqls = sqls;
     }
 

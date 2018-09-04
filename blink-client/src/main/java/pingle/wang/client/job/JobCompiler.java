@@ -107,12 +107,12 @@ public class JobCompiler {
 
 
         //3.sql操作
-        Map<String, LinkedHashMap<String, String>> sqls = job.getSqls();
+        Map<String, Map<String, String>> sqls = job.getSqls();
 
         //3.1含有view的操作
         if (sqls.containsKey(SqlConstant.VIEW)){
             //视图名，对应查询
-            LinkedHashMap<String, String> viewMap = sqls.get(SqlConstant.VIEW);
+            Map<String, String> viewMap = sqls.get(SqlConstant.VIEW);
             Set<String> viewNames = viewMap.keySet();
             for (String name:viewNames) {
                 String sql = viewMap.get(name);
@@ -124,7 +124,7 @@ public class JobCompiler {
 
         //3.2 insert inot操作
         if (sqls.containsKey(SqlConstant.INSERT_INTO)){
-            LinkedHashMap<String, String> updateMap = sqls.get(SqlConstant.INSERT_INTO);
+            Map<String, String> updateMap = sqls.get(SqlConstant.INSERT_INTO);
             Collection<String> values = updateMap.values();
             for (String sql:values){
                 logger.info("sql insert into  is -----> "+sql);
