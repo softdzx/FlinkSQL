@@ -6,5 +6,6 @@ package pingle.wang.sqlserver.flink.job;
 public interface FlinkJobConstant {
     String JOB_FLAG = "flink.";
 
+
     String PARALLELISM = "flink.parallelism";
 }
