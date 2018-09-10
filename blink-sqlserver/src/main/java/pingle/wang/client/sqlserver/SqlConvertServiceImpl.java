@@ -119,7 +119,7 @@ public class SqlConvertServiceImpl implements SqlConvertService {
                 for (ColumnDefinition colInfo : columnDefinitionList) {
                     String columnName = colInfo.getColumnName();
                     ColDataType colDataType = colInfo.getColDataType();
-                    String dataType = colDataType.getDataType().trim().toLowerCase();
+                    String dataType = colDataType.toString().trim().toLowerCase();
                     schemas.put(columnName.trim().replace("`",""),getColumnType(dataType));
                 }
             }
