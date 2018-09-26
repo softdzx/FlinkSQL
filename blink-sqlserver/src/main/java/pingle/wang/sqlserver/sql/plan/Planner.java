@@ -30,7 +30,7 @@ public class Planner {
         this.jobProps = jobProps;
     }
 
-    public CompilationResult sqlPlanner(Map<String,List<String>> funMap,Map<String,LinkedHashMap<String,String>> sqls, int parallelism) throws Throwable {
+    public CompilationResult sqlPlanner(Map<String,List<String>> funMap,Map<String,Map<String,String>> sqls, int parallelism) throws Throwable {
         Validator validator = new Validator();
 
         //方法
@@ -45,7 +45,7 @@ public class Planner {
         //视图
         if(sqls.containsKey(SqlConstant.VIEW)){
             //视图名，对应查询
-            LinkedHashMap<String, String> viewMap = sqls.get(SqlConstant.VIEW);
+            Map<String, String> viewMap = sqls.get(SqlConstant.VIEW);
             Collection<String> views =viewMap.values();
             for (String sql:views) {
                 SqlNodeList stmts = parse(sql);
@@ -55,7 +55,7 @@ public class Planner {
 
         //dml
         if (sqls.containsKey(SqlConstant.INSERT_INTO)) {
-            LinkedHashMap<String, String> updateMap = sqls.get(SqlConstant.INSERT_INTO);
+            Map<String, String> updateMap = sqls.get(SqlConstant.INSERT_INTO);
             Collection<String> values = updateMap.values();
             for (String sql : values) {
                 SqlNodeList stmts = parse(sql);

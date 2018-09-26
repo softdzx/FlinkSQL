@@ -3,14 +3,16 @@ package pingle.wang.client.sqlserver;
 import com.google.common.base.Joiner;
 import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.parser.CCJSqlParserManager;
-import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.create.table.ColDataType;
 import net.sf.jsqlparser.statement.create.table.ColumnDefinition;
 import net.sf.jsqlparser.statement.create.table.CreateTable;
 import net.sf.jsqlparser.statement.create.table.Index;
-import net.sf.jsqlparser.statement.create.view.CreateView;
-import net.sf.jsqlparser.statement.insert.Insert;
+import org.apache.calcite.config.Lex;
+import org.apache.calcite.sql.SqlInsert;
+import org.apache.calcite.sql.SqlNode;
+import org.apache.calcite.sql.ddl.SqlCreateView;
+import org.apache.calcite.sql.parser.ddl.SqlDdlParserImpl;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.flink.api.common.typeinfo.BasicTypeInfo;
@@ -21,9 +23,13 @@ import org.slf4j.LoggerFactory;
 import pingle.wang.client.common.sql.SqlInputException;
 import pingle.wang.client.common.sql.SqlParserResDescriptor;
 
+import java.io.ByteArrayInputStream;
+import java.io.InputStream;
 import java.io.StringReader;
+import java.lang.reflect.Field;
 import java.util.*;
 
+import static org.apache.calcite.sql.parser.SqlParser.DEFAULT_IDENTIFIER_MAX_LENGTH;
 import static pingle.wang.client.common.sql.SqlConstant.*;
 
 
@@ -172,12 +178,18 @@ public class SqlConvertServiceImpl implements SqlConvertService {
             throw new SqlInputException("sql not null   ");
         }
         SqlParserResDescriptor sqlParserResDescriptor = new SqlParserResDescriptor();
-        Statement stmt = getSqlStatement(viewSql);
-        if (stmt instanceof CreateView) {
-            CreateView view = (CreateView) stmt;
-            Table table = view.getView();
-            sqlParserResDescriptor.setTableName(table.getName());
-            sqlParserResDescriptor.setSqlInfo(view.getSelectBody().toString());
+
+        SqlNode sqlNode = parseDdl(viewSql);
+        if (sqlNode instanceof SqlCreateView){
+            SqlCreateView node = (SqlCreateView) sqlNode;
+
+            Field fieldName = node.getClass().getDeclaredField("name");
+            fieldName.setAccessible(true);
+            sqlParserResDescriptor.setTableName(fieldName.get(node).toString());
+
+            Field fieldQuery = node.getClass().getDeclaredField("query");
+            fieldQuery.setAccessible(true);
+            sqlParserResDescriptor.setSqlInfo(fieldQuery.get(node).toString());
         }
 
         return sqlParserResDescriptor;
@@ -190,12 +202,12 @@ public class SqlConvertServiceImpl implements SqlConvertService {
         }
 
         SqlParserResDescriptor sqlParserResDescriptor = new SqlParserResDescriptor();
-        Statement stmt = getSqlStatement(insertSql);
-        if (stmt instanceof Insert) {
-            Insert insert = (Insert) stmt;
-            Table table = insert.getTable();
-            sqlParserResDescriptor.setTableName(table.getName());
-            sqlParserResDescriptor.setSqlInfo(insert.toString());
+
+        SqlNode sqlNode = parseQueryOrDml(insertSql);
+        if (sqlNode instanceof SqlInsert){
+            SqlInsert node = (SqlInsert) sqlNode;
+            sqlParserResDescriptor.setTableName(node.getTargetTable().toString());
+            sqlParserResDescriptor.setSqlInfo(node.toString());
         }
 
         return sqlParserResDescriptor;
@@ -327,8 +339,6 @@ public class SqlConvertServiceImpl implements SqlConvertService {
         return ret;
     }
 
-
-
     private Statement getSqlStatement(String sql){
         CCJSqlParserManager parser = new CCJSqlParserManager();
         try {
@@ -338,6 +348,47 @@ public class SqlConvertServiceImpl implements SqlConvertService {
         }
         return null;
     }
+
+    /**
+     * 解析ddl中的sql语法
+     * @param sql
+     * @return
+     * @throws Exception
+     */
+    public SqlNode parseDdl(String sql) throws Exception {
+        // Keep the SQL syntax consistent with Flink
+
+        sql = sql.replaceAll("\n","");
+
+        InputStream stream  = new ByteArrayInputStream(sql.getBytes());
+        SqlDdlParserImpl impl = getSqlDdlParserImpl(stream);
+        return impl.parseSqlStmtEof();
+    }
+
+    /**
+     * 解析dml中的sql语法
+     * @param sql
+     * @return
+     * @throws Exception
+     */
+    public SqlNode parseQueryOrDml(String sql) throws Exception {
+        sql = sql.replaceAll("\n","");
+        InputStream stream  = new ByteArrayInputStream(sql.getBytes());
+        SqlDdlParserImpl impl = getSqlDdlParserImpl(stream);
+        return impl.SqlQueryOrDml();
+    }
+
+    private SqlDdlParserImpl getSqlDdlParserImpl(InputStream stream){
+        SqlDdlParserImpl impl = new SqlDdlParserImpl(stream);
+        impl.switchTo("BTID");
+        impl.setTabSize(1);
+        impl.setQuotedCasing(Lex.JAVA.quotedCasing);
+        impl.setUnquotedCasing(Lex.JAVA.unquotedCasing);
+        impl.setIdentifierMaxLength(DEFAULT_IDENTIFIER_MAX_LENGTH);
+        return impl;
+    }
+
+
 
     private TypeInformation<?> getColumnType(String type){
         TypeInformation<?> basicTypeInfo = null ;
