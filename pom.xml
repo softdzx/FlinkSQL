@@ -18,7 +18,6 @@
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <java.version>1.8</java.version>
 
-
         <jsqlparser.version>1.2</jsqlparser.version>
         <calcite.version>1.16.0</calcite.version>
         <lombok.version>1.18.0</lombok.version>
@@ -30,7 +29,7 @@
         <druid.version>1.0.29</druid.version>
         <fastjson.version>1.2.47</fastjson.version>
 
-        <flink.version>1.5.0</flink.version>
+        <flink.version>1.6.0</flink.version>
         <flink.shaded.version>1.5.0</flink.shaded.version>
         <hadoop.version>2.7.4</hadoop.version>
         <jackson.version>1.9.13</jackson.version>
@@ -55,6 +54,11 @@
                 <groupId>com.github.jsqlparser</groupId>
                 <artifactId>jsqlparser</artifactId>
                 <version>${jsqlparser.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.calcite</groupId>
+                <artifactId>calcite-server</artifactId>
+                <version>${calcite.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.projectlombok</groupId>
