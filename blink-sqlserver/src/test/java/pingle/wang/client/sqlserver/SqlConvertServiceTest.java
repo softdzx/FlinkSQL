@@ -49,7 +49,9 @@ public class SqlConvertServiceTest {
         String source = "CREATE TABLE kafak_source (" +
                 "`date` string, " +
                 "amount float, " +
-                "proctime timestamp) " +
+                "date timestamp," +
+                "watermark for date AS withOffset(date,1000) " +
+                ") " +
                 "with (" +
                 "type=kafka," +
                 "'flink.parallelism'=1," +

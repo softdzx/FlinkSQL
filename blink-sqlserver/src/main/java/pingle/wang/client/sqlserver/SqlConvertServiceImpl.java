@@ -1,13 +1,5 @@
 package pingle.wang.client.sqlserver;
 
-import com.google.common.base.Joiner;
-import net.sf.jsqlparser.JSQLParserException;
-import net.sf.jsqlparser.parser.CCJSqlParserManager;
-import net.sf.jsqlparser.statement.Statement;
-import net.sf.jsqlparser.statement.create.table.ColDataType;
-import net.sf.jsqlparser.statement.create.table.ColumnDefinition;
-import net.sf.jsqlparser.statement.create.table.CreateTable;
-import net.sf.jsqlparser.statement.create.table.Index;
 import org.apache.calcite.config.Lex;
 import org.apache.calcite.sql.SqlInsert;
 import org.apache.calcite.sql.SqlNode;
@@ -22,12 +14,16 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pingle.wang.client.common.sql.SqlInputException;
 import pingle.wang.client.common.sql.SqlParserResDescriptor;
+import pingle.wang.sqlserver.sql.parser.InputSqlPattern;
+import pingle.wang.sqlserver.sql.parser.TableInfo;
+import pingle.wang.sqlserver.sql.parser.TableInfoParser;
+import pingle.wang.util.SqlUtil;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
-import java.io.StringReader;
 import java.lang.reflect.Field;
 import java.util.*;
+import java.util.regex.Matcher;
 
 import static org.apache.calcite.sql.parser.SqlParser.DEFAULT_IDENTIFIER_MAX_LENGTH;
 import static pingle.wang.client.common.sql.SqlConstant.*;
@@ -107,7 +103,7 @@ public class SqlConvertServiceImpl implements SqlConvertService {
 
     @Override
     public SqlParserResDescriptor sqlDdlParser(String ddlSql) throws Exception {
-        if (null == ddlSql){
+        if (StringUtils.isBlank(ddlSql)){
             throw new SqlInputException("sql not null   ");
         }
 
@@ -115,55 +111,38 @@ public class SqlConvertServiceImpl implements SqlConvertService {
         Map<String,String> parms = new LinkedHashMap<>();
         Map<String,TypeInformation<?>> schemas = new LinkedHashMap<>();
 
-        Statement stmt = getSqlStatement(ddlSql);
-        if (stmt instanceof CreateTable) {
-            CreateTable table = (CreateTable) stmt;
+        TableInfo tableInfo = TableInfoParser.parser(ddlSql);
+        //with解析
+        parms.putAll(tableInfo.getProps());
+        logger.info("the with properties are : "+ parms.toString());
 
-            //字段名和类型解析
-            List<ColumnDefinition> columnDefinitionList = table.getColumnDefinitions();
-            if (CollectionUtils.isNotEmpty(columnDefinitionList)){
-                for (ColumnDefinition colInfo : columnDefinitionList) {
-                    String columnName = colInfo.getColumnName();
-                    ColDataType colDataType = colInfo.getColDataType();
-                    String dataType = colDataType.toString().trim().toLowerCase();
-                    schemas.put(columnName.trim().replace("`",""),getColumnType(dataType));
-                }
-            }
-
-            //索引解析
-            List<Index> indexes = table.getIndexes();
-            List<String> indexNames = new ArrayList<>();
-            if (CollectionUtils.isNotEmpty(indexes)){
-                for (Index index : indexes) {
-                    List<String> indexColumnsNames = index.getColumnsNames();
-                    for (String indexColumnsName : indexColumnsNames) {
-                        indexNames.add(0,indexColumnsName.trim().replace("`",""));
-                    }
-                }
-            }
-            parms.put(INDEXE,Joiner.on(",").join(indexNames));
-
-            //with参数获取
-            List<String> optionsStrings = (List<String>) table.getTableOptionsStrings();
-            if (CollectionUtils.isNotEmpty(optionsStrings)){
-                String options = optionsStrings.get(1);
-                if (StringUtils.isNotBlank(options)){
-                    String[] values = options.substring(1, options.length() - 1).split(",");
-                    for (String value : values) {
-                        if (value.contains(flag)){
-                            String[] keyValue = value.split(flag);
-                            parms.put(keyValue[0].replaceAll("'","").trim(),keyValue[1].replaceAll("'","").trim());
-                        }
-                    }
-                }
-            }
-
-            sqlParserResDescriptor.setTableName(table.getTable().getName());
-            sqlParserResDescriptor.setSqlInfo(stmt.toString());
+        String primaryKey = tableInfo.getPrimarys();
+        if(StringUtils.isNotBlank(primaryKey)){
+            logger.info("primary key is : "+ primaryKey);
+            parms.put(INDEXE,primaryKey);
         }
+
+        String sourceType = parms.get("type");
+        sqlParserResDescriptor.setSourceType(sourceType);
+        logger.info("parser source type is : "+sourceType);
+
+
+        Map<String, String> columnInfos = tableInfo.getSchema();
+        for (String columnName: columnInfos.keySet()){
+            String columnType = columnInfos.get(columnName);
+            schemas.put(columnName.trim().replace("`",""),getColumnType(columnType));
+        }
+
+
+        sqlParserResDescriptor.setTableName(tableInfo.getTableName());
+
+        sqlParserResDescriptor.setSqlInfo(ddlSql);
 
         sqlParserResDescriptor.setSchemas(schemas);
         sqlParserResDescriptor.setParms(parms);
+
+        sqlParserResDescriptor.setVirtuals(tableInfo.getVirtuals());
+        sqlParserResDescriptor.setWatermarks(tableInfo.getWatermarks());
 
         if (parms.containsKey(type)){
             sqlParserResDescriptor.setSourceType(parms.get(type));
@@ -246,12 +225,14 @@ public class SqlConvertServiceImpl implements SqlConvertService {
                         tableList.add(newSql+SQL_END_FLAG);
                     }
 
-                    if (newSql.toUpperCase().contains(FUNCTION)){
+                    Matcher funMatcher = InputSqlPattern.CREATE_FUN_PATTERN.matcher(SqlUtil.getReplaceSql(newSql));
+                    if(funMatcher.find()){
                         funList.add(newSql+SQL_END_FLAG);
                     }
 
-                    if (newSql.toUpperCase().contains(VIEW)){
-                        viewList.add(newSql+SQL_END_FLAG);
+                    Matcher viewMatcher = InputSqlPattern.CREATE_VIEW_PATTERN.matcher(SqlUtil.getReplaceSql(newSql));
+                    if(viewMatcher.find()){
+                        viewList.add(newSql);
                     }
                 }else {
                     insertList.add(newSql+SQL_END_FLAG);
@@ -339,15 +320,6 @@ public class SqlConvertServiceImpl implements SqlConvertService {
         return ret;
     }
 
-    private Statement getSqlStatement(String sql){
-        CCJSqlParserManager parser = new CCJSqlParserManager();
-        try {
-            return parser.parse(new StringReader(sql));
-        } catch (JSQLParserException e) {
-            e.printStackTrace();
-        }
-        return null;
-    }
 
     /**
      * 解析ddl中的sql语法
@@ -359,6 +331,8 @@ public class SqlConvertServiceImpl implements SqlConvertService {
         // Keep the SQL syntax consistent with Flink
 
         sql = sql.replaceAll("\n","");
+
+        logger.info("----->" +sql);
 
         InputStream stream  = new ByteArrayInputStream(sql.getBytes());
         SqlDdlParserImpl impl = getSqlDdlParserImpl(stream);
