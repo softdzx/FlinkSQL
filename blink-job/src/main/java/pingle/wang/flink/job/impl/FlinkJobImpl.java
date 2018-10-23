@@ -33,7 +33,7 @@ public class FlinkJobImpl implements FlinkJob {
 
     private Map<String, TableSource> sources = new LinkedHashMap<>();
     private List<FlinkTableSink> flinkTableSinks = new LinkedList<>();
-    private Map<String,LinkedHashMap<String,String>> sqls = new LinkedHashMap<>();
+    private Map<String, Map<String,String>> sqls = new LinkedHashMap<>();
 
     private Map<String, List<String>> userSqls;
     private Map<String, String> sqlInfoMap;
@@ -53,7 +53,6 @@ public class FlinkJobImpl implements FlinkJob {
 
         //source和sink
         this.getUserSqls(sqlContext)
-            .getSqlInfoMap(sqlContext)
             .getTableSources(sqlContext)
             .getTableSinks(sqlContext)
             .getFunctionSqls()
@@ -98,7 +97,7 @@ public class FlinkJobImpl implements FlinkJob {
 
     private FlinkJobImpl getExecuteSqls() throws Exception {
         //视图sql
-        LinkedHashMap<String,String> viewMap = new LinkedHashMap<>();
+        Map<String,String> viewMap = new LinkedHashMap<>();
         List<String> viewSqls = userSqls.get(SqlConstant.VIEW);
         if (CollectionUtils.isNotEmpty(viewSqls)){
             for (String sql : viewSqls){
@@ -111,7 +110,7 @@ public class FlinkJobImpl implements FlinkJob {
         }
 
         //insert into
-        LinkedHashMap<String,String> queryMap = new LinkedHashMap<>();
+        Map<String,String> queryMap = new LinkedHashMap<>();
         List<String> querys = userSqls.get(SqlConstant.INSERT_INTO);
             if (CollectionUtils.isNotEmpty(querys)){
             for (String sql : querys){
@@ -160,6 +159,15 @@ public class FlinkJobImpl implements FlinkJob {
                     jobCommonProps.put(key,parms.get(key));
                 }
             }
+
+            Map<String, String> watermarks = sqlDdlParser.getWatermarks();
+            if (CollectionUtils.isNotEmpty(watermarks.keySet())){
+                for (String  key : watermarks.keySet()){
+                    parms.put("watermarks_"+key,watermarks.get(key));
+                    jobCommonProps.put("watermarks_"+key,watermarks.get(key));
+                }
+            }
+
             //TODO: 2source创建需要的配置信息，如kafka的topic等信息,目前先不管，直接传递下去
             TableSource tableSource = sourceProvider.getInputTableSource(parms, inputSchema);
 
@@ -224,11 +232,5 @@ public class FlinkJobImpl implements FlinkJob {
         userSqls = sqlConvertService.transfromSqlClassify(sqlContext);
         return this;
     }
-
-    private FlinkJobImpl getSqlInfoMap(String sqlContext) throws Exception {
-        sqlInfoMap = sqlConvertService.getCreateSinkSqlInfo(sqlContext);
-        return this;
-    }
-
 
 }
