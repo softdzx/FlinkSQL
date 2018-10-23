@@ -3,6 +3,7 @@ package pingle.wang.client.job;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.flink.api.java.utils.ParameterTool;
 import org.apache.flink.runtime.jobgraph.JobGraph;
+import org.apache.flink.streaming.api.TimeCharacteristic;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
 import org.apache.flink.streaming.api.graph.StreamGraph;
 import org.apache.flink.table.api.Table;
@@ -92,7 +93,16 @@ public class JobCompiler {
 
     JobGraph getJobGraph() throws IOException {
         StreamExecutionEnvironment exeEnv = env.execEnv();
+
         Map<String,String> extraProps = job.getExtraProps();
+        for (String key: extraProps.keySet()){
+            if (key.startsWith("watermarks_")){
+                logger.info("-----------------> " + key);
+                exeEnv.setStreamTimeCharacteristic(TimeCharacteristic.EventTime);
+                extraProps.remove(key);
+            }
+        }
+
 
         //1.设置flink的参数等信息
         Map<String,String> jobProps = new HashMap<>();

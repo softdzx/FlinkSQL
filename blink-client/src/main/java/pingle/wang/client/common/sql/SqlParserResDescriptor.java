@@ -15,15 +15,12 @@ public class SqlParserResDescriptor {
     private String tableName;
     private String sqlInfo;
 
-    public SqlParserResDescriptor() {
-    }
+    //虚拟列
+    Map<String,String> virtuals ;
+    //proctime,rowtime信息
+    Map<String,String> watermarks;
 
-    public SqlParserResDescriptor(Map<String, String> parms, Map<String, TypeInformation<?>> schemas, String sourceType, String tableName, String sqlInfo) {
-        this.parms = parms;
-        this.schemas = schemas;
-        this.sourceType = sourceType;
-        this.tableName = tableName;
-        this.sqlInfo = sqlInfo;
+    public SqlParserResDescriptor() {
     }
 
     public Map<String, String> getParms() {
@@ -64,6 +61,22 @@ public class SqlParserResDescriptor {
 
     public void setSqlInfo(String sqlInfo) {
         this.sqlInfo = sqlInfo;
+    }
+
+    public Map<String, String> getVirtuals() {
+        return virtuals;
+    }
+
+    public void setVirtuals(Map<String, String> virtuals) {
+        this.virtuals = virtuals;
+    }
+
+    public Map<String, String> getWatermarks() {
+        return watermarks;
+    }
+
+    public void setWatermarks(Map<String, String> watermarks) {
+        this.watermarks = watermarks;
     }
 
     @Override
