@@ -24,12 +24,6 @@
         <dependency>
             <groupId>org.apache.flink</groupId>
             <artifactId>flink-runtime_${scala.binary.version}</artifactId>
-            <exclusions>
-                <exclusion>
-                    <groupId>com.typesafe</groupId>
-                    <artifactId>config</artifactId>
-                </exclusion>
-            </exclusions>
         </dependency>
         <dependency>
             <groupId>org.apache.flink</groupId>
