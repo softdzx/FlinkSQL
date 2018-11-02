@@ -10,10 +10,7 @@ import pingle.wang.sqlserver.sql.parser.SqlCreateFunction;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map;
-import java.util.stream.Stream;
-import java.util.stream.StreamSupport;
 
 /**
  * @Author: wpl
@@ -38,17 +35,17 @@ public class Validator {
         return userDefinedFunctions;
     }
 
-    public void validateViewQuery(SqlNodeList query) {
+    public void validateViewQuery(SqlNode query) {
         extract(query);
         validateExactlyOnceViewSelect(query);
     }
 
-    public void validateDml(SqlNodeList query) {
+    public void validateDml(SqlNode query) {
         extract(query);
         validateExactlyOnceDml(query);
     }
 
-    public void validateFunction(SqlNodeList query) {
+    public void validateFunction(SqlNode query) {
         extract(query);
     }
 
@@ -56,13 +53,11 @@ public class Validator {
      * Extract options and jars from the queries.
      */
     @VisibleForTesting
-    void extract(SqlNodeList query) {
-        for (SqlNode n : query) {
-            if (n instanceof SqlSetOption) {
-                extract((SqlSetOption) n);
-            } else if (n instanceof SqlCreateFunction) {
-                extract((SqlCreateFunction) n);
-            }
+    void extract(SqlNode query) {
+        if (query instanceof SqlSetOption) {
+            extract((SqlSetOption) query);
+        } else if (query instanceof SqlCreateFunction) {
+            extract((SqlCreateFunction) query);
         }
     }
 
@@ -72,7 +67,6 @@ public class Validator {
         }
 
         for (SqlNode n : node.jarList()) {
-//      URI uri = URI.create(unwrapConstant(n));
             additionalResources.add(new Path(unwrapConstant(n)));
         }
 
@@ -92,34 +86,17 @@ public class Validator {
     }
 
     @VisibleForTesting
-    void validateExactlyOnceViewSelect(SqlNodeList query) {
-        Preconditions.checkArgument(query.size() > 0);
-        SqlNode last = query.get(query.size() - 1);
-        long n = StreamSupport.stream(query.spliterator(), false)
-                .filter(x -> x instanceof SqlSelect)
-                .count();
-        Preconditions.checkArgument(n == 1 && last instanceof SqlSelect,
-                "Only one top-level SELECT statement is allowed");
-        sqlQuery = (SqlSelect) last;
+    void validateExactlyOnceViewSelect(SqlNode query) {
+        if (query instanceof SqlSelect) {
+            sqlQuery = (SqlSelect) query;
+        }
     }
 
     @VisibleForTesting
-    void validateExactlyOnceDml(SqlNodeList query) {
-        Preconditions.checkArgument(query.size() > 0);
-        long n = StreamSupport.stream(query.spliterator(), false)
-                .filter(x -> x instanceof SqlInsert)
-                .count();
-        System.out.println(n);
-        Stream<SqlNode> nodeStream = StreamSupport.stream(query.spliterator(), false)
-                .filter(x -> x instanceof SqlInsert);
-        Iterator<SqlNode> iterator = nodeStream.iterator();
-        for (Iterator<SqlNode> it = iterator; it.hasNext(); ) {
-            SqlInsert node = (SqlInsert) it.next();
-            statement = node;
+    void validateExactlyOnceDml(SqlNode query) {
+        if (query instanceof SqlInsert) {
+            statement = (SqlInsert) query;
         }
-        Preconditions.checkArgument(n == 1 && statement instanceof SqlInsert,
-                "Only one top-level Insert statement is allowed");
-
     }
 
 

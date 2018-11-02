@@ -352,7 +352,7 @@ public class SqlConvertServiceImpl implements SqlConvertService {
         return impl.SqlQueryOrDml();
     }
 
-    private SqlDdlParserImpl getSqlDdlParserImpl(InputStream stream){
+    public SqlDdlParserImpl getSqlDdlParserImpl(InputStream stream){
         SqlDdlParserImpl impl = new SqlDdlParserImpl(stream);
         impl.switchTo("BTID");
         impl.setTabSize(1);

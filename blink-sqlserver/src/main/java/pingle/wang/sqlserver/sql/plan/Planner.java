@@ -1,17 +1,19 @@
 package pingle.wang.sqlserver.sql.plan;
 
-import org.apache.calcite.config.Lex;
+import org.apache.calcite.sql.SqlNode;
 import org.apache.calcite.sql.SqlNodeList;
+import org.apache.calcite.sql.parser.ddl.SqlDdlParserImpl;
 import org.apache.flink.annotation.VisibleForTesting;
 import org.apache.flink.table.sources.TableSource;
 import pingle.wang.client.common.sql.SqlConstant;
 import pingle.wang.client.job.CompilationResult;
 import pingle.wang.client.job.JobCompiler;
 import pingle.wang.client.job.JobDescriptor;
+import pingle.wang.client.sqlserver.SqlConvertServiceImpl;
 import pingle.wang.client.table.FlinkTableSink;
-import pingle.wang.sqlserver.sql.parser.impl.SqlParserImpl;
 
-import java.io.StringReader;
+import java.io.ByteArrayInputStream;
+import java.io.InputStream;
 import java.util.*;
 
 /**
@@ -37,7 +39,7 @@ public class Planner {
         if(funMap.containsKey(SqlConstant.FUNCTION)){
             List<String> list = funMap.get(SqlConstant.FUNCTION);
             for (String sql:list) {
-                SqlNodeList stmts = parse(sql);
+                SqlNode stmts = parse(sql);
                 validator.validateFunction(stmts);
             }
         }
@@ -48,7 +50,7 @@ public class Planner {
             Map<String, String> viewMap = sqls.get(SqlConstant.VIEW);
             Collection<String> views =viewMap.values();
             for (String sql:views) {
-                SqlNodeList stmts = parse(sql);
+                SqlNode stmts = parse(sql);
                 validator.validateViewQuery(stmts);
             }
         }
@@ -58,7 +60,7 @@ public class Planner {
             Map<String, String> updateMap = sqls.get(SqlConstant.INSERT_INTO);
             Collection<String> values = updateMap.values();
             for (String sql : values) {
-                SqlNodeList stmts = parse(sql);
+                SqlNode stmts = parse(sql);
                 validator.validateDml(stmts);
             }
         }
@@ -82,18 +84,11 @@ public class Planner {
     }
 
     @VisibleForTesting
-    static SqlNodeList parse(String sql) throws Exception {
-        // Keep the SQL syntax consistent with Flink
-        try (StringReader in = new StringReader(sql)) {
-            SqlParserImpl impl = new SqlParserImpl(in);
+    public SqlNode parse(String sql) throws Exception {
+        InputStream stream  = new ByteArrayInputStream(sql.getBytes());
+        SqlConvertServiceImpl service = new SqlConvertServiceImpl();
+        SqlDdlParserImpl parserImpl = service.getSqlDdlParserImpl(stream);
 
-            // back tick as the quote
-            impl.switchTo("BTID");
-            impl.setTabSize(1);
-            impl.setQuotedCasing(Lex.JAVA.quotedCasing);
-            impl.setUnquotedCasing(Lex.JAVA.unquotedCasing);
-            impl.setIdentifierMaxLength(DEFAULT_IDENTIFIER_MAX_LENGTH);
-            return impl.SqlStmtsEof();
-        }
+        return parserImpl.parseSqlStmtEof();
     }
 }
