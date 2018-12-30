@@ -1,7 +1,6 @@
 package pingle.wang.sqlserver.sql.plan;
 
 import org.apache.calcite.sql.SqlNode;
-import org.apache.calcite.sql.SqlNodeList;
 import org.apache.calcite.sql.parser.ddl.SqlDdlParserImpl;
 import org.apache.flink.annotation.VisibleForTesting;
 import org.apache.flink.table.sources.TableSource;
@@ -20,8 +19,6 @@ import java.util.*;
  * @Author: wpl
  */
 public class Planner {
-    private static final int DEFAULT_IDENTIFIER_MAX_LENGTH = 128;
-
     private Map<String, TableSource> tableSourceMap;
     private List<FlinkTableSink> flinkTableSinks;
     private Map<String, String>  jobProps;
@@ -90,5 +87,6 @@ public class Planner {
         SqlDdlParserImpl parserImpl = service.getSqlDdlParserImpl(stream);
 
         return parserImpl.parseSqlStmtEof();
+//        return parserImpl.SqlStmtsEof();
     }
 }

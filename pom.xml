@@ -11,8 +11,8 @@
         <module>blink-client</module>
         <module>blink-sqlserver</module>
         <module>blink-job</module>
-        <module>flink-core</module>
-        <module>flink-oraginalCode</module>
+        <!--<module>flink-core</module>-->
+        <!--<module>flink-oraginalCode</module>-->
     </modules>
 
     <properties>

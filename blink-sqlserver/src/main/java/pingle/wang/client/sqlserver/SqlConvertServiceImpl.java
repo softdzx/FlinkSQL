@@ -323,6 +323,7 @@ public class SqlConvertServiceImpl implements SqlConvertService {
 
     /**
      * 解析ddl中的sql语法
+     * create Function解析更改calcite源代码实现，参加[CALCITE-2663]https://issues.apache.org/jira/browse/CALCITE-2663
      * @param sql
      * @return
      * @throws Exception

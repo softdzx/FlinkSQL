@@ -30,6 +30,7 @@ public class FlinkJobTest {
 
     @Before
     public void init(){
+//        CREATE Function解析更改calcite源代码实现，参加[CALCITE-2663]https://issues.apache.org/jira/browse/CALCITE-2663
         String udf =    "CREATE FUNCTION " +
                 "demouf " +
                 "AS " +
@@ -88,7 +89,7 @@ public class FlinkJobTest {
 
         sqlContext =
                 Joiner.on("").join(
-                        source,sink,view, result
+                        udf,source,sink,view, result
                 );
 
         System.out.println(sqlContext);
