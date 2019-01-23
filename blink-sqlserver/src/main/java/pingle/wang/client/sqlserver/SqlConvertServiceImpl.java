@@ -330,7 +330,6 @@ public class SqlConvertServiceImpl implements SqlConvertService {
      */
     public SqlNode parseDdl(String sql) throws Exception {
         // Keep the SQL syntax consistent with Flink
-
         sql = sql.replaceAll("\n","");
 
         logger.info("----->" +sql);

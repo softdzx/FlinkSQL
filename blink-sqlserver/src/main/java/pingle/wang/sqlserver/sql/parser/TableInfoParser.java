@@ -26,7 +26,6 @@ public class TableInfoParser {
         Map<String,String> virtuals = new LinkedHashMap<>();
         Map<String,String> watermarks = new LinkedHashMap<>();
 
-        ddl = StringUtil.replaceIgnoreQuota(ddl, "`", "");
         CreateTableParser.SqlParserResult parserResult = createTableParser.parseSql(SqlUtil.getReplaceSql(ddl));
         //字段信息
         String fieldsInfoStr = parserResult.getFieldsInfoStr();

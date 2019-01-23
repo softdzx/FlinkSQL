@@ -69,14 +69,6 @@ public class SqlUtil {
     }
 
     public static String getReplaceSql(String sql) {
-        if (sql.toLowerCase().contains("tablesource")){
-            sql= sql.replaceAll("(?i)tablesource","TABLE");
-        }
-
-        if (sql.toLowerCase().contains("tablesink")){
-            sql= sql.replaceAll("(?i)tablesink","TABLE");
-        }
-
         sql = sql.replaceAll("--.*", "")
                 .replaceAll("\r\n", " ")
                 .replaceAll("\n", " ")
