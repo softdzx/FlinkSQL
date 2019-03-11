@@ -1,11 +1,10 @@
-阿里工作的时候是使用Blink进行流数据处理和计算，通过编写sql实现Blink的计算job，开发简单高效，产品易用。目前想尝试实现Flink产品化，类似Blink这种产品。
-
-
-   1.使用SQL为统一开发规范，SQL语言的好处是：声明式，易理解，稳定可靠，自动优化。如果采用API开发的话，最大的问题是对于job调优依赖程序员经验，比较困难，同时API开发方式侵入性太强(数据安全，集群安装等)。而sql可以自动调优，避免这两个问题的产生。
+一.背景
+    
+   阿里工作的时候是使用Blink进行流数据处理和计算，通过编写sql实现Blink的计算job，开发简单高效，产品易用。
+   目前尝试实现Flink产品化，类似Blink这种产品。使用SQL为统一开发规范，SQL语言的好处是：声明式，易理解，稳定可靠，自动优化。
+   如果采用API开发的话，最大的问题是对于job调优依赖程序员经验，比较困难，同时API开发方式侵入性太强(数据安全，集群安全等)。而sql可以自动调优，避免这两个问题的产生。
    
-   
-   2.目前实现思路：
-   
+二.实现思路：
    
     用户输入sql（ddl,dml,query）  -> ddl对应为Flink的source和sink
 
@@ -16,38 +15,42 @@
                                 -> query数据处理和计算
                            
                            
-    --> 封装为api对应Flink的Job:env.sqlQuery/env.sqlUpdate;table.writeToSink;
+    --> 封装为api对应Flink的Job:env.sqlQuery/env.sqlUpdate
     
     
-    --> JobGraph和对应job提交; 
+    --> JobGraph和对应job提交，StandaloneClusterClient.submitJob或者YarnClusterClient.runDetached; 
+
+三.发布版本：
+
+   [v2.0.0](https://github.com/ambition119/FlinkSQL/tree/master)  待开发完成
+   
+        blink-client 接口定义
+        blink-sql    stream和batch table的sql解析
+        blink-batch  BatchTableSource和BatchTableSink封装实现
+        blink-stream StreamTableSource和StreamTableSink
+        blink-job  封装为stream job 
     
+   新特性：
+        
+        1. 抽取sql层被流和批使用
+        2. 增加sql实现批处理开发
+        3. 增加维表功能
+
+   [v1.0.0](https://github.com/ambition119/FlinkSQL/tree/v1.0.0)  2018年7月
+   
+       blink-client 接口定义
+       blink-sqlserver  stream table的sql解析
+       blink-job  封装为stream job    
+      
+   [新特性](/doc/v1.0.0.md)
+       
+       1.实现create function
+       2.实现sql开发流处理程序任务  
+       3.更改源码实现sql CEP
     
-二.开发过程
-
-
-   1.SqlConvertService是将用户sql语句解析为不同类型，source,sink,view,dml（目前只支持insert into）  
-   
-   SqlParserImpl SQL的解析  
-     
-   Validator  验证器  
-   
-   Planner    计划解析
-   
-   2.FlinkJobImpl是实现Flink的Source和Sink，以及JobGraph
-   
-   3.JobGraph的提交和执行,如StandaloneClusterClient.submitJob或者YarnClusterClient.runDetached    
-   
-   
-三.代码关注
-
-apache Flink sql
-
-apache calcite
-
-apache hive  
-
-
 四.样例
+
+v1.0.0 开发sql:
 ```sql
 CREATE FUNCTION demouf AS 
       'pingle.wang.api.sql.function.DemoUDF' 
@@ -55,7 +58,7 @@ USING JAR 'hdfs://flink/udf/jedis.jar',
       JAR 'hdfs://flink/udf/customudf.jar';
       
       
-CREATE TABLE kafak_source (
+CREATE TABLE kafka_source (
       `date` string,
       amount float, 
       proctime timestamp
@@ -89,7 +92,7 @@ with (
 CREATE VIEW view_select AS 
       SELECT `date`, 
               amount 
-      FROM kafak_source 
+      FROM kafka_source 
       GROUP BY 
             `date`,
             amount
