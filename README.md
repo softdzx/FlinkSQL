@@ -42,9 +42,9 @@
       
    [新特性](/doc/v1.0.0.md)
        
-       1.实现create function
-       2.实现sql开发流处理程序任务  
-       3.更改源码实现sql CEP
+       1. 实现create function
+       2. 实现sql开发流处理程序任务  
+       3. 更改源码实现sql CEP
     
 四.样例
 
